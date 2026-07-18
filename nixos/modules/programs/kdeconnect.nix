@@ -19,6 +19,16 @@
       nullable = true;
       example = "gnomeExtensions.gsconnect";
     };
+    openFirewall = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Whether to open the TCP and UDP ports (1714-1764) needed by
+        KDE Connect. Useful to disable when the package itself is
+        installed elsewhere (e.g. via Home Manager) and only the
+        system-level firewall rule is needed here.
+      '';
+    };
   };
   config =
     let
@@ -28,7 +38,7 @@
       environment.systemPackages = lib.optionals (cfg.package != null) [
         cfg.package
       ];
-      networking.firewall = rec {
+      networking.firewall = lib.mkIf cfg.openFirewall (rec {
         allowedTCPPortRanges = [
           {
             from = 1714;
@@ -36,6 +46,6 @@
           }
         ];
         allowedUDPPortRanges = allowedTCPPortRanges;
-      };
+      });
     };
 }
